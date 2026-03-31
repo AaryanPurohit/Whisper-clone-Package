@@ -12,10 +12,6 @@ cask "whisper-clone" do
 
   app "WhisperClone.app"
 
-  postflight do
-    system_command "/usr/bin/open", args: ["-a", "WhisperClone"]
-  end
-
   uninstall quit: "com.aaryanpurohit.whisper-clone"
 
   zap trash: [
