@@ -29,21 +29,18 @@ class PasteManager {
 
     // MARK: - Private
 
-    /// Returns true if there is a focused UI element whose value is editable (text field / text area).
+    /// Returns true if there is a foreground app (other than us) with a focused window.
+    /// This covers native text fields, terminals, Electron apps (VS Code), browsers, etc.
     private func hasFocusedTextField() -> Bool {
-        let system = AXUIElementCreateSystemWide()
+        guard let frontApp = NSWorkspace.shared.frontmostApplication,
+              frontApp.bundleIdentifier != Bundle.main.bundleIdentifier else {
+            return false
+        }
+        let appElement = AXUIElementCreateApplication(frontApp.processIdentifier)
         var ref: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(
-            system,
-            kAXFocusedUIElementAttribute as CFString,
-            &ref
-        ) == .success, let ref = ref else { return false }
-
-        // CFTypeRef returned for a UI element is an AXUIElement
-        let element = ref as! AXUIElement
-        var settable: DarwinBoolean = false
-        AXUIElementIsAttributeSettable(element, kAXValueAttribute as CFString, &settable)
-        return settable.boolValue
+        return AXUIElementCopyAttributeValue(
+            appElement, kAXFocusedWindowAttribute as CFString, &ref
+        ) == .success && ref != nil
     }
 
     private func simulatePaste() {

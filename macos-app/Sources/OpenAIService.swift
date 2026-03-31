@@ -37,8 +37,7 @@ class OpenAIService {
         guard !apiKey.trimmingCharacters(in: .whitespaces).isEmpty else {
             throw OpenAIError.missingAPIKey
         }
-        let raw = try await transcribe(audioURL: audioURL, apiKey: apiKey)
-        return try await refine(text: raw, apiKey: apiKey)
+        return try await transcribe(audioURL: audioURL, apiKey: apiKey)
     }
 
     // MARK: - Whisper
