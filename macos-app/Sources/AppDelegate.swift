@@ -10,6 +10,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Lifecycle
 
+    private var overlayPanel: OverlayPanel?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory) // No dock icon
 
@@ -17,6 +19,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         hotkey.onToggle = { [weak self] in self?.toggleRecording() }
         hotkey.start()
+
+        let panel = OverlayPanel()
+        panel.orderFrontRegardless()
+        overlayPanel = panel
     }
 
     // MARK: - Status bar
@@ -86,9 +92,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Settings
 
+    private var settingsWindow: NSWindow?
+
     @objc private func openSettings() {
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        if let win = settingsWindow, win.isVisible {
+            win.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let win = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 420, height: 320),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        win.isReleasedWhenClosed = false
+        win.title = "Whisper Clone Settings"
+        win.contentView = NSHostingView(rootView: SettingsView())
+        win.center()
+        win.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        settingsWindow = win
     }
 
     // MARK: - Icon states
@@ -101,12 +126,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             case .idle:
                 self.statusItem.button?.image = NSImage(systemSymbolName: "mic.circle", accessibilityDescription: "Whisper Clone")
                 self.statusItem.button?.contentTintColor = nil
+                OverlayController.shared.state = .idle
             case .recording:
                 self.statusItem.button?.image = NSImage(systemSymbolName: "mic.circle.fill", accessibilityDescription: "Recording")
                 self.statusItem.button?.contentTintColor = .systemRed
+                OverlayController.shared.state = .recording
             case .processing:
                 self.statusItem.button?.image = NSImage(systemSymbolName: "waveform.circle.fill", accessibilityDescription: "Processing")
                 self.statusItem.button?.contentTintColor = .systemBlue
+                OverlayController.shared.state = .processing
             }
         }
     }

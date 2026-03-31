@@ -1,3 +1,4 @@
+import AppKit
 import AVFoundation
 import Foundation
 
@@ -7,6 +8,8 @@ class AudioRecorder: NSObject, AVAudioRecorderDelegate {
     private var recorder: AVAudioRecorder?
     private var completion: ((URL?) -> Void)?
     private(set) var isRecording = false
+    var onLevelUpdate: ((Float) -> Void)?
+    private var meterTimer: Timer?
 
     private var outputURL: URL {
         FileManager.default.temporaryDirectory
@@ -30,6 +33,9 @@ class AudioRecorder: NSObject, AVAudioRecorderDelegate {
     }
 
     func stopRecording(completion: @escaping (URL?) -> Void) {
+        meterTimer?.invalidate()
+        meterTimer = nil
+        onLevelUpdate?(0)
         self.completion = completion
         recorder?.stop()
         isRecording = false
@@ -55,11 +61,24 @@ class AudioRecorder: NSObject, AVAudioRecorderDelegate {
         do {
             recorder = try AVAudioRecorder(url: outputURL, settings: settings)
             recorder?.delegate = self
+            recorder?.isMeteringEnabled = true
             recorder?.record()
             isRecording = true
+            meterTimer = Timer.scheduledTimer(withTimeInterval: 0.04, repeats: true) { [weak self] _ in
+                self?.sampleLevel()
+            }
         } catch {
             print("[AudioRecorder] Failed to start: \(error)")
         }
+    }
+
+    private func sampleLevel() {
+        guard let r = recorder, r.isRecording else { return }
+        r.updateMeters()
+        let db = r.averagePower(forChannel: 0) // -160 to 0 dB
+        let minDB: Float = -50
+        let level = max(0, min(1, (db - minDB) / (-minDB)))
+        onLevelUpdate?(level)
     }
 
     private func showMicrophonePermissionAlert() {

@@ -62,11 +62,12 @@ class OpenAIService {
         request.httpBody = body
 
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let decoded = try JSONDecoder().decode(TranscriptionResponse.self, from: data)
-            return decoded.text
+            let data = try await fetchWithRetry(request)
+            return try JSONDecoder().decode(TranscriptionResponse.self, from: data).text
         } catch let err as DecodingError {
             throw OpenAIError.transcriptionFailed(err.localizedDescription)
+        } catch let err as OpenAIError {
+            throw err
         } catch {
             throw OpenAIError.networkError(error)
         }
@@ -91,14 +92,42 @@ class OpenAIService {
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let data = try await fetchWithRetry(request)
             let decoded = try JSONDecoder().decode(ChatResponse.self, from: data)
             return decoded.choices.first?.message.content ?? text
         } catch let err as DecodingError {
             throw OpenAIError.refinementFailed(err.localizedDescription)
+        } catch let err as OpenAIError {
+            throw err
         } catch {
             throw OpenAIError.networkError(error)
         }
+    }
+
+    // MARK: - Retry
+
+    private func fetchWithRetry(_ request: URLRequest, attempts: Int = 2) async throws -> Data {
+        var lastError: Error!
+        for attempt in 0..<attempts {
+            if attempt > 0 {
+                try await Task.sleep(nanoseconds: 400_000_000) // 400 ms back-off
+            }
+            do {
+                let (data, _) = try await URLSession.shared.data(for: request)
+                return data
+            } catch let err as NSError where isRetryable(err) {
+                lastError = err
+            }
+        }
+        throw OpenAIError.networkError(lastError)
+    }
+
+    private func isRetryable(_ err: NSError) -> Bool {
+        guard err.domain == NSURLErrorDomain else { return false }
+        return [NSURLErrorSecureConnectionFailed,   // TLS / SSL handshake
+                NSURLErrorNetworkConnectionLost,
+                NSURLErrorTimedOut,
+                NSURLErrorCannotConnectToHost].contains(err.code)
     }
 }
 
