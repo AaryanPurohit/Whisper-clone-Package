@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>WhisperClone</string>
+    <key>CFBundleDisplayName</key>
+    <string>Whisper Clone</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.aaryanpurohit.whisper-clone</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleExecutable</key>
+    <string>WhisperClone</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+    <!-- Run as menubar app — no Dock icon -->
+    <key>LSUIElement</key>
+    <true/>
+    <!-- Permissions -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Whisper Clone records your voice to transcribe and polish your speech into text.</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>Whisper Clone needs to paste transcribed text into other applications.</string>
+</dict>
+</plist>
