@@ -19,6 +19,8 @@ class HotkeyManager {
     var onTapFailed: (() -> Void)?
     var onRestartRequired: (() -> Void)?
 
+    var isInstalled: Bool { eventTap != nil }
+
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var accessibilityPoller: Timer?
@@ -70,8 +72,12 @@ class HotkeyManager {
             callback: hotkeyEventCallback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {
-            DispatchQueue.main.async { self.onTapFailed?() }
             startAccessibilityPolling()
+            // Delay our custom alert so the macOS system prompt can resolve first
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                guard let self, self.eventTap == nil else { return }
+                self.onTapFailed?()
+            }
             return
         }
 

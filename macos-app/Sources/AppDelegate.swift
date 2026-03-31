@@ -49,6 +49,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.init(title: label, action: #selector(toggleRecordingFromMenu), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(.init(title: "Settings…", action: #selector(openSettings), keyEquivalent: ","))
+        if !HotkeyManager.shared.isInstalled {
+            menu.addItem(.init(title: "Fix Hotkey Setup…", action: #selector(fixHotkeySetup), keyEquivalent: ""))
+        }
         menu.addItem(.separator())
         menu.addItem(.init(title: "Quit Whisper Clone", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
@@ -62,6 +65,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Recording
 
     @objc private func toggleRecordingFromMenu() { toggleRecording() }
+
+    @objc private func fixHotkeySetup() { showAccessibilityAlert() }
 
     func toggleRecording() {
         if recorder.isRecording {
@@ -172,11 +177,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         alert.addButton(withTitle: "Restart Now")
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
-        let url = Bundle.main.bundleURL
-        let task = Process()
-        task.launchPath = "/usr/bin/open"
-        task.arguments = [url.path]
-        task.launch()
+        let path = Bundle.main.bundleURL.path
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            let task = Process()
+            task.launchPath = "/usr/bin/open"
+            task.arguments = [path]
+            try? task.run()
+        }
         NSApp.terminate(nil)
     }
 

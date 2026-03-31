@@ -1,0 +1,12 @@
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/AppDelegate.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/AudioRecorder.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/HotkeyManager.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/KeychainHelper.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/OpenAIService.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/OverlayController.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/OverlayPanel.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/OverlayView.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/PasteManager.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/PreferencesManager.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/SettingsView.swift
+/Users/aaryanpurohit/Whisper-clone-Package/macos-app/Sources/WhisperCloneApp.swift

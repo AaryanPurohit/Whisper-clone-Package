@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0FE3B9600E009032EDE5BD81 /* OverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC6707C91E7A5DD6B65AE02C /* OverlayController.swift */; };
 		151BFD5DA66449007CAB7479 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038024F468F8474AA3D4D0BA /* KeychainHelper.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* OverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6F7E8D9C0B1A2 /* OverlayController.swift */; };
-		A2B3C4D5E6F7A8B9C0D1E2F3 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E3D4C5B6A7F8E9D0C1B2A3 /* OverlayView.swift */; };
-		A3B4C5D6E7F8A9B0C1D2E3F4 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3E4D5C6B7A8F9E0D1C2B3A4 /* OverlayPanel.swift */; };
 		17F52EBA516A2F9B6EB2C881 /* PreferencesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936161FA9A8DCEB564B42E0 /* PreferencesManager.swift */; };
 		2D8B84E0F7A5D9A01A5432C9 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE56246F9B4A7ED29181F726 /* AudioRecorder.swift */; };
+		59669136F9B9A8DC9C629FF8 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D1255C892C955B9BD2CDF3 /* OverlayPanel.swift */; };
+		5AA5C1363B36AD3CFAFADCDE /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F955BE915E5FE26F561327A5 /* OverlayView.swift */; };
 		7E0E827A2C4FD01D06857C5E /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDD0BCE97543DDCB288F7A50 /* HotkeyManager.swift */; };
 		9352DEC914463B9C2A9EAC18 /* WhisperCloneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 190F51131B7B84A247F159B1 /* WhisperCloneApp.swift */; };
 		C1244CF2E7E004D3FF990187 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25F7793D6EF131B13B0E152 /* OpenAIService.swift */; };
@@ -23,18 +23,18 @@
 
 /* Begin PBXFileReference section */
 		038024F468F8474AA3D4D0BA /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
-		F1E2D3C4B5A6F7E8D9C0B1A2 /* OverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayController.swift; sourceTree = "<group>"; };
-		F2E3D4C5B6A7F8E9D0C1B2A3 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
-		F3E4D5C6B7A8F9E0D1C2B3A4 /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
 		190F51131B7B84A247F159B1 /* WhisperCloneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperCloneApp.swift; sourceTree = "<group>"; };
 		25C7DC0B6633FA0CDFAC5CF7 /* PasteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteManager.swift; sourceTree = "<group>"; };
 		383C738765F5EE33E99DCBCF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		4936161FA9A8DCEB564B42E0 /* PreferencesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesManager.swift; sourceTree = "<group>"; };
 		5AB13E665B4E945563E24E44 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		76D1255C892C955B9BD2CDF3 /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
 		B25F7793D6EF131B13B0E152 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
 		BD26AE0598575A062FBC9DD1 /* WhisperClone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhisperClone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BDD0BCE97543DDCB288F7A50 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		CE56246F9B4A7ED29181F726 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
+		F955BE915E5FE26F561327A5 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
+		FC6707C91E7A5DD6B65AE02C /* OverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -46,9 +46,9 @@
 				BDD0BCE97543DDCB288F7A50 /* HotkeyManager.swift */,
 				038024F468F8474AA3D4D0BA /* KeychainHelper.swift */,
 				B25F7793D6EF131B13B0E152 /* OpenAIService.swift */,
-				F3E4D5C6B7A8F9E0D1C2B3A4 /* OverlayPanel.swift */,
-				F1E2D3C4B5A6F7E8D9C0B1A2 /* OverlayController.swift */,
-				F2E3D4C5B6A7F8E9D0C1B2A3 /* OverlayView.swift */,
+				FC6707C91E7A5DD6B65AE02C /* OverlayController.swift */,
+				76D1255C892C955B9BD2CDF3 /* OverlayPanel.swift */,
+				F955BE915E5FE26F561327A5 /* OverlayView.swift */,
 				25C7DC0B6633FA0CDFAC5CF7 /* PasteManager.swift */,
 				4936161FA9A8DCEB564B42E0 /* PreferencesManager.swift */,
 				383C738765F5EE33E99DCBCF /* SettingsView.swift */,
@@ -136,9 +136,9 @@
 				7E0E827A2C4FD01D06857C5E /* HotkeyManager.swift in Sources */,
 				151BFD5DA66449007CAB7479 /* KeychainHelper.swift in Sources */,
 				C1244CF2E7E004D3FF990187 /* OpenAIService.swift in Sources */,
-				A3B4C5D6E7F8A9B0C1D2E3F4 /* OverlayPanel.swift in Sources */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* OverlayController.swift in Sources */,
-				A2B3C4D5E6F7A8B9C0D1E2F3 /* OverlayView.swift in Sources */,
+				0FE3B9600E009032EDE5BD81 /* OverlayController.swift in Sources */,
+				59669136F9B9A8DC9C629FF8 /* OverlayPanel.swift in Sources */,
+				5AA5C1363B36AD3CFAFADCDE /* OverlayView.swift in Sources */,
 				DB3DEE766493BD21ED2C4095 /* PasteManager.swift in Sources */,
 				17F52EBA516A2F9B6EB2C881 /* PreferencesManager.swift in Sources */,
 				C690BAD587AD6A873096EA29 /* SettingsView.swift in Sources */,
@@ -183,7 +183,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -203,7 +203,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -249,7 +249,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -263,7 +263,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -281,7 +281,6 @@
 				CODE_SIGN_ENTITLEMENTS = Sources/WhisperClone.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = U99LX5K26V;
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -299,7 +298,6 @@
 				CODE_SIGN_ENTITLEMENTS = Sources/WhisperClone.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = U99LX5K26V;
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
