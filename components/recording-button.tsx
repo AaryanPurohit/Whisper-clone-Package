@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface RecordingButtonProps {
   onRecordingComplete: (blob: Blob) => void;
   disabled?: boolean;
+  shortcutKey?: string;
 }
 
 function formatTime(seconds: number): string {
@@ -20,12 +21,14 @@ function formatTime(seconds: number): string {
 export default function RecordingButton({
   onRecordingComplete,
   disabled = false,
+  shortcutKey = "Control",
 }: RecordingButtonProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastKeyPressTime = useRef<number>(0);
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
@@ -80,6 +83,33 @@ export default function RecordingButton({
     return () => stopTimer();
   }, [stopTimer]);
 
+  const isRecordingRef = useRef(isRecording);
+  isRecordingRef.current = isRecording;
+
+  useEffect(() => {
+    if (!shortcutKey || disabled) return;
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== shortcutKey || e.repeat) return;
+      e.preventDefault();
+
+      const now = Date.now();
+      if (now - lastKeyPressTime.current < 500) {
+        lastKeyPressTime.current = 0;
+        if (isRecordingRef.current) {
+          stopRecording();
+        } else {
+          startRecording();
+        }
+      } else {
+        lastKeyPressTime.current = now;
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [shortcutKey, disabled, startRecording, stopRecording]);
+
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="relative flex items-center justify-center">
@@ -130,10 +160,15 @@ export default function RecordingButton({
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="flex items-center gap-2 text-sm font-medium text-red-500"
+            className="flex flex-col items-center gap-1"
           >
-            <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-            Recording {formatTime(elapsed)}
+            <div className="flex items-center gap-2 text-sm font-medium text-red-500">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+              Recording {formatTime(elapsed)}
+            </div>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {`Tap or double-press ${shortcutKey === "Control" ? "Ctrl" : shortcutKey} to stop`}
+            </p>
           </motion.div>
         ) : (
           <motion.p
@@ -143,7 +178,9 @@ export default function RecordingButton({
             exit={{ opacity: 0, y: -4 }}
             className="text-sm text-zinc-500 dark:text-zinc-400"
           >
-            {disabled ? "Processing..." : "Tap to start recording"}
+            {disabled
+              ? "Processing..."
+              : `Tap or double-press ${shortcutKey === "Control" ? "Ctrl" : shortcutKey} to record`}
           </motion.p>
         )}
       </AnimatePresence>

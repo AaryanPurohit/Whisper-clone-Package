@@ -8,7 +8,11 @@ import ResultCards from "./result-cards";
 
 type AppState = "idle" | "recording" | "processing" | "done" | "error";
 
-export default function VoiceRecorder() {
+interface VoiceRecorderProps {
+  shortcutKey?: string;
+}
+
+export default function VoiceRecorder({ shortcutKey }: VoiceRecorderProps) {
   const [state, setState] = useState<AppState>("idle");
   const [rawTranscript, setRawTranscript] = useState("");
   const [polishedText, setPolishedText] = useState("");
@@ -83,6 +87,7 @@ export default function VoiceRecorder() {
       <RecordingButton
         onRecordingComplete={handleRecordingComplete}
         disabled={isProcessing}
+        shortcutKey={shortcutKey}
       />
 
       {/* Processing indicator */}
