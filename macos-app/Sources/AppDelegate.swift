@@ -18,7 +18,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusItem()
 
         hotkey.onToggle = { [weak self] in self?.toggleRecording() }
+        hotkey.onTapFailed = { [weak self] in self?.showAccessibilityAlert() }
         hotkey.start()
+
+        // Auto-open Settings if no API key is configured yet
+        if PreferencesManager.shared.apiKey.trimmingCharacters(in: .whitespaces).isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self.openSettings() }
+        }
 
         let panel = OverlayPanel()
         panel.orderFrontRegardless()
@@ -139,7 +145,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    // MARK: - Error
+    // MARK: - Alerts
+
+    private func showAccessibilityAlert() {
+        let alert = NSAlert()
+        alert.messageText = "Accessibility Permission Required"
+        alert.informativeText = """
+            Whisper Clone needs Accessibility access to detect your hotkey (double-press Control).
+
+            Click "Open System Settings", enable Whisper Clone under Privacy & Security → Accessibility, \
+            then switch back — the hotkey will activate automatically without restarting the app.
+            """
+        alert.addButton(withTitle: "Open System Settings")
+        alert.addButton(withTitle: "Later")
+        NSApp.activate(ignoringOtherApps: true)
+        if alert.runModal() == .alertFirstButtonReturn {
+            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+        }
+    }
 
     private func showError(_ message: String) {
         let alert = NSAlert()

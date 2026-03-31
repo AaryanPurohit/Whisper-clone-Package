@@ -16,9 +16,11 @@ class HotkeyManager {
     static let shared = HotkeyManager()
 
     var onToggle: (() -> Void)?
+    var onTapFailed: (() -> Void)?
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+    private var accessibilityPoller: Timer?
 
     // Double-press detection state
     private var lastPressTime: TimeInterval = 0
@@ -67,7 +69,8 @@ class HotkeyManager {
             callback: hotkeyEventCallback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {
-            print("[HotkeyManager] Failed to create event tap — grant Accessibility access in System Settings.")
+            DispatchQueue.main.async { self.onTapFailed?() }
+            startAccessibilityPolling()
             return
         }
 
@@ -82,6 +85,16 @@ class HotkeyManager {
     private func requestAccessibilityIfNeeded() {
         let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         AXIsProcessTrustedWithOptions(opts)
+    }
+
+    private func startAccessibilityPolling() {
+        accessibilityPoller?.invalidate()
+        accessibilityPoller = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            guard AXIsProcessTrusted() else { return }
+            timer.invalidate()
+            self?.accessibilityPoller = nil
+            self?.install()
+        }
     }
 
     // MARK: - Event handling
