@@ -19,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         hotkey.onToggle = { [weak self] in self?.toggleRecording() }
         hotkey.onTapFailed = { [weak self] in self?.showAccessibilityAlert() }
+        hotkey.onRestartRequired = { [weak self] in self?.relaunchApp() }
         hotkey.start()
 
         // Auto-open Settings if no API key is configured yet
@@ -162,6 +163,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if alert.runModal() == .alertFirstButtonReturn {
             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
         }
+    }
+
+    private func relaunchApp() {
+        let alert = NSAlert()
+        alert.messageText = "Restart Required"
+        alert.informativeText = "Whisper Clone needs to restart to activate the hotkey. It will reopen automatically."
+        alert.addButton(withTitle: "Restart Now")
+        NSApp.activate(ignoringOtherApps: true)
+        alert.runModal()
+        let url = Bundle.main.bundleURL
+        let task = Process()
+        task.launchPath = "/usr/bin/open"
+        task.arguments = [url.path]
+        task.launch()
+        NSApp.terminate(nil)
     }
 
     private func showError(_ message: String) {

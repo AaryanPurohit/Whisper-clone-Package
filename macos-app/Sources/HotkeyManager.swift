@@ -17,6 +17,7 @@ class HotkeyManager {
 
     var onToggle: (() -> Void)?
     var onTapFailed: (() -> Void)?
+    var onRestartRequired: (() -> Void)?
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -90,10 +91,14 @@ class HotkeyManager {
     private func startAccessibilityPolling() {
         accessibilityPoller?.invalidate()
         accessibilityPoller = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-            guard AXIsProcessTrusted() else { return }
+            guard let self, AXIsProcessTrusted() else { return }
             timer.invalidate()
-            self?.accessibilityPoller = nil
-            self?.install()
+            self.accessibilityPoller = nil
+            self.install()
+            // If tap still fails after permission was granted the process needs a restart
+            if self.eventTap == nil {
+                DispatchQueue.main.async { self.onRestartRequired?() }
+            }
         }
     }
 
