@@ -177,13 +177,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         alert.addButton(withTitle: "Restart Now")
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
-        let path = Bundle.main.bundleURL.path
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            let task = Process()
-            task.launchPath = "/usr/bin/open"
-            task.arguments = [path]
-            try? task.run()
-        }
+        let task = Process()
+        task.launchPath = "/usr/bin/open"
+        task.arguments = [Bundle.main.bundleURL.path]
+        try? task.run()
+        Thread.sleep(forTimeInterval: 0.4)
         NSApp.terminate(nil)
     }
 
