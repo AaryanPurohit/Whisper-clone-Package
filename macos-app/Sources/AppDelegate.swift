@@ -18,7 +18,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusItem()
 
         hotkey.onToggle = { [weak self] in self?.toggleRecording() }
-        hotkey.onTapFailed = { [weak self] in self?.showAccessibilityAlert() }
         hotkey.start()
 
         // Auto-open Settings if no API key is configured yet
@@ -48,9 +47,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.init(title: label, action: #selector(toggleRecordingFromMenu), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(.init(title: "Settings…", action: #selector(openSettings), keyEquivalent: ","))
-        if !HotkeyManager.shared.isInstalled {
-            menu.addItem(.init(title: "Fix Hotkey Setup…", action: #selector(fixHotkeySetup), keyEquivalent: ""))
-        }
         menu.addItem(.separator())
         menu.addItem(.init(title: "Quit Whisper Clone", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
@@ -64,8 +60,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Recording
 
     @objc private func toggleRecordingFromMenu() { toggleRecording() }
-
-    @objc private func fixHotkeySetup() { showAccessibilityAlert() }
 
     func toggleRecording() {
         if recorder.isRecording {
@@ -113,7 +107,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let win = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 320),
+            contentRect: NSRect(x: 0, y: 0, width: 420, height: 300),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -151,38 +145,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     // MARK: - Alerts
-
-    private func showAccessibilityAlert() {
-        let alert = NSAlert()
-        alert.messageText = "Accessibility Permission Required"
-        alert.informativeText = """
-            Whisper Clone needs Accessibility access to detect your hotkey (double-press Control).
-
-            Click "Open System Settings", enable Whisper Clone under Privacy & Security → Accessibility, \
-            then switch back — the hotkey will activate automatically without restarting the app.
-            """
-        alert.addButton(withTitle: "Open System Settings")
-        alert.addButton(withTitle: "Later")
-        NSApp.activate(ignoringOtherApps: true)
-        if alert.runModal() == .alertFirstButtonReturn {
-            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
-        }
-    }
-
-    private func relaunchApp() {
-        let alert = NSAlert()
-        alert.messageText = "Restart Required"
-        alert.informativeText = "Whisper Clone needs to restart to activate the hotkey. It will reopen automatically."
-        alert.addButton(withTitle: "Restart Now")
-        NSApp.activate(ignoringOtherApps: true)
-        alert.runModal()
-        let task = Process()
-        task.launchPath = "/usr/bin/open"
-        task.arguments = [Bundle.main.bundleURL.path]
-        try? task.run()
-        Thread.sleep(forTimeInterval: 0.4)
-        NSApp.terminate(nil)
-    }
 
     private func showError(_ message: String) {
         let alert = NSAlert()

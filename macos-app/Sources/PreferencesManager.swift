@@ -2,11 +2,15 @@ import Foundation
 import Combine
 
 enum HotkeyOption: String, CaseIterable, Codable {
-    case control = "Control"
     case option  = "Option (Alt)"
-    case shift   = "Shift"
+    case control = "Control"
 
-    var displayName: String { rawValue }
+    var displayName: String {
+        switch self {
+        case .option:  return "Option + Space"
+        case .control: return "Control + Space"
+        }
+    }
 }
 
 extension Notification.Name {
@@ -35,9 +39,9 @@ class PreferencesManager: ObservableObject {
     }
 
     private init() {
-        let saved = UserDefaults.standard.string(forKey: Keys.hotkey) ?? HotkeyOption.control.rawValue
-        // Fall back to .control if a previously saved value (e.g. "Fn") no longer exists
-        self.hotkey = HotkeyOption(rawValue: saved) ?? .control
+        let saved = UserDefaults.standard.string(forKey: Keys.hotkey) ?? HotkeyOption.option.rawValue
+        // Fall back to .option if a previously saved value no longer exists
+        self.hotkey = HotkeyOption(rawValue: saved) ?? .option
         self.apiKey = KeychainHelper.load(key: Keys.apiKey) ?? ""
     }
 }

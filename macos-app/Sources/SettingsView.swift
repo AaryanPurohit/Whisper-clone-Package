@@ -26,7 +26,7 @@ struct SettingsView: View {
                 }
                 .padding(.leading, 4)
 
-                Text("Double-press the selected key within 0.5 s to start or stop recording.")
+                Text("Press the shortcut once to start recording, again to stop and transcribe.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

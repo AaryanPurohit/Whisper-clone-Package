@@ -1,28 +1,30 @@
 import Cocoa
+import Carbon.HIToolbox
 
 class HotkeyManager {
     static let shared = HotkeyManager()
 
     var onToggle: (() -> Void)?
-    var onTapFailed: (() -> Void)?
-    var onRestartRequired: (() -> Void)?  // kept for interface compatibility, no longer triggered
+    var onTapFailed: (() -> Void)?       // kept for interface compatibility, unused
+    var onRestartRequired: (() -> Void)? // kept for interface compatibility, unused
 
-    var isInstalled: Bool { globalMonitor != nil }
+    var isInstalled: Bool { hotKeyRef != nil }
 
+    private var hotKeyRef: EventHotKeyRef?
+    // Listen for hotkey events from both foreground (local) and background (global) contexts
+    private var localMonitor: Any?
     private var globalMonitor: Any?
-    private var accessibilityPoller: Timer?
 
-    // Double-press detection state
-    private var lastPressTime: TimeInterval = 0
-    private var modifierWasDown = false
-    private let doublePressInterval: TimeInterval = 0.5
+    // Unique ID for our registered hotkey
+    private static let hotkeyID: UInt32 = 1
+    private static let hotkeySignature: OSType = 0x57484B31 // "WHK1"
 
     private init() {}
 
     // MARK: - Public
 
     func start() {
-        requestAccessibilityIfNeeded()
+        installEventMonitors()
         install()
         NotificationCenter.default.addObserver(
             self,
@@ -33,83 +35,71 @@ class HotkeyManager {
     }
 
     func stop() {
-        if let monitor = globalMonitor {
-            NSEvent.removeMonitor(monitor)
-            globalMonitor = nil
-        }
-        accessibilityPoller?.invalidate()
-        accessibilityPoller = nil
+        unregisterHotKey()
+        [localMonitor, globalMonitor].compactMap { $0 }.forEach { NSEvent.removeMonitor($0) }
+        localMonitor = nil
+        globalMonitor = nil
     }
 
     // MARK: - Private
 
     @objc private func hotkeyChanged() {
-        lastPressTime = 0
-        modifierWasDown = false
+        unregisterHotKey()
+        install()
+    }
+
+    /// Intercept the Carbon hotkey event once it arrives in the NSEvent queue.
+    /// RegisterEventHotKey delivers events as NSEvent(.systemDefined, subtype 6).
+    /// No Accessibility or Input Monitoring permission is required for this.
+    private func installEventMonitors() {
+        guard localMonitor == nil else { return }
+
+        let handler: (NSEvent) -> NSEvent? = { [weak self] event in
+            self?.handleSystemEvent(event)
+            return event
+        }
+
+        localMonitor  = NSEvent.addLocalMonitorForEvents(matching: .systemDefined, handler: handler)
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .systemDefined) { [weak self] event in
+            self?.handleSystemEvent(event)
+        }
+    }
+
+    private func handleSystemEvent(_ event: NSEvent) {
+        // Subtype 6 = NSHotKeyDownEvent (Carbon hotkey pressed)
+        guard event.subtype.rawValue == 6 else { return }
+        let keyID = UInt32(event.data1 & 0x0000_ffff)
+        guard keyID == HotkeyManager.hotkeyID else { return }
+        DispatchQueue.main.async { self.onToggle?() }
     }
 
     private func install() {
-        guard AXIsProcessTrusted() else {
-            startAccessibilityPolling()
-            // Delay our custom alert so the macOS system prompt can resolve first
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
-                guard let self, self.globalMonitor == nil else { return }
-                self.onTapFailed?()
-            }
-            return
-        }
-
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            self?.handleFlagsChanged(event: event)
-        }
-    }
-
-    private func requestAccessibilityIfNeeded() {
-        let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-        AXIsProcessTrustedWithOptions(opts)
-    }
-
-    private func startAccessibilityPolling() {
-        accessibilityPoller?.invalidate()
-        accessibilityPoller = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-            guard let self, AXIsProcessTrusted() else { return }
-            timer.invalidate()
-            self.accessibilityPoller = nil
-            self.install()
-        }
-    }
-
-    // MARK: - Event handling
-
-    private func handleFlagsChanged(event: NSEvent) {
         let hotkey = PreferencesManager.shared.hotkey
-        let flag = hotkey.nsFlag
-        let isDown = event.modifierFlags.contains(flag)
+        var id = EventHotKeyID(signature: HotkeyManager.hotkeySignature, id: HotkeyManager.hotkeyID)
+        var ref: EventHotKeyRef?
+        let status = RegisterEventHotKey(
+            UInt32(kVK_Space),
+            hotkey.carbonModifiers,
+            id,
+            GetApplicationEventTarget(),
+            0,
+            &ref
+        )
+        if status == noErr { hotKeyRef = ref }
+    }
 
-        if isDown && !modifierWasDown {
-            modifierWasDown = true
-            let now = Date().timeIntervalSince1970
-            if now - lastPressTime < doublePressInterval {
-                lastPressTime = 0
-                modifierWasDown = false
-                DispatchQueue.main.async { self.onToggle?() }
-            } else {
-                lastPressTime = now
-            }
-        } else if !isDown && modifierWasDown {
-            modifierWasDown = false
-        }
+    private func unregisterHotKey() {
+        if let ref = hotKeyRef { UnregisterEventHotKey(ref); hotKeyRef = nil }
     }
 }
 
 // MARK: - HotkeyOption helpers
 
 private extension HotkeyOption {
-    var nsFlag: NSEvent.ModifierFlags {
+    var carbonModifiers: UInt32 {
         switch self {
-        case .control: return .control
-        case .option:  return .option
-        case .shift:   return .shift
+        case .control: return UInt32(controlKey)
+        case .option:  return UInt32(optionKey)
         }
     }
 }
