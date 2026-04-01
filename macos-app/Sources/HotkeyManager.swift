@@ -1,28 +1,15 @@
 import Cocoa
 
-// Top-level C-compatible callback required for CGEventTap
-private func hotkeyEventCallback(
-    proxy: CGEventTapProxy,
-    type: CGEventType,
-    event: CGEvent,
-    refcon: UnsafeMutableRawPointer?
-) -> Unmanaged<CGEvent>? {
-    guard let refcon else { return Unmanaged.passRetained(event) }
-    let manager = Unmanaged<HotkeyManager>.fromOpaque(refcon).takeUnretainedValue()
-    return manager.processEvent(type: type, event: event)
-}
-
 class HotkeyManager {
     static let shared = HotkeyManager()
 
     var onToggle: (() -> Void)?
     var onTapFailed: (() -> Void)?
-    var onRestartRequired: (() -> Void)?
+    var onRestartRequired: (() -> Void)?  // kept for interface compatibility, no longer triggered
 
-    var isInstalled: Bool { eventTap != nil }
+    var isInstalled: Bool { globalMonitor != nil }
 
-    private var eventTap: CFMachPort?
-    private var runLoopSource: CFRunLoopSource?
+    private var globalMonitor: Any?
     private var accessibilityPoller: Timer?
 
     // Double-press detection state
@@ -46,47 +33,35 @@ class HotkeyManager {
     }
 
     func stop() {
-        if let tap = eventTap { CGEvent.tapEnable(tap: tap, enable: false) }
-        if let src = runLoopSource { CFRunLoopRemoveSource(CFRunLoopGetMain(), src, .commonModes) }
-        eventTap = nil
-        runLoopSource = nil
+        if let monitor = globalMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalMonitor = nil
+        }
+        accessibilityPoller?.invalidate()
+        accessibilityPoller = nil
     }
 
     // MARK: - Private
 
     @objc private func hotkeyChanged() {
-        // Reset double-press state when hotkey changes
         lastPressTime = 0
         modifierWasDown = false
     }
 
     private func install() {
-        let mask: CGEventMask =
-            (1 << CGEventType.flagsChanged.rawValue)
-
-        guard let tap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .defaultTap,
-            eventsOfInterest: mask,
-            callback: hotkeyEventCallback,
-            userInfo: Unmanaged.passUnretained(self).toOpaque()
-        ) else {
+        guard AXIsProcessTrusted() else {
             startAccessibilityPolling()
             // Delay our custom alert so the macOS system prompt can resolve first
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
-                guard let self, self.eventTap == nil else { return }
+                guard let self, self.globalMonitor == nil else { return }
                 self.onTapFailed?()
             }
             return
         }
 
-        let src = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-        CFRunLoopAddSource(CFRunLoopGetMain(), src, .commonModes)
-        CGEvent.tapEnable(tap: tap, enable: true)
-
-        eventTap = tap
-        runLoopSource = src
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            self?.handleFlagsChanged(event: event)
+        }
     }
 
     private func requestAccessibilityIfNeeded() {
@@ -101,33 +76,17 @@ class HotkeyManager {
             timer.invalidate()
             self.accessibilityPoller = nil
             self.install()
-            // If tap still fails after permission was granted the process needs a restart
-            if self.eventTap == nil {
-                DispatchQueue.main.async { self.onRestartRequired?() }
-            }
         }
     }
 
     // MARK: - Event handling
 
-    fileprivate func processEvent(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+    private func handleFlagsChanged(event: NSEvent) {
         let hotkey = PreferencesManager.shared.hotkey
-
-        switch type {
-        case .flagsChanged:
-            return handleFlagsChanged(event: event, hotkey: hotkey)
-        default:
-            return Unmanaged.passRetained(event)
-        }
-    }
-
-    // Modifier keys (Control, Option, Shift) fire flagsChanged events
-    private func handleFlagsChanged(event: CGEvent, hotkey: HotkeyOption) -> Unmanaged<CGEvent>? {
-        let flag = hotkey.cgFlag
-        let isDown = event.flags.contains(flag)
+        let flag = hotkey.nsFlag
+        let isDown = event.modifierFlags.contains(flag)
 
         if isDown && !modifierWasDown {
-            // Key pressed
             modifierWasDown = true
             let now = Date().timeIntervalSince1970
             if now - lastPressTime < doublePressInterval {
@@ -140,21 +99,17 @@ class HotkeyManager {
         } else if !isDown && modifierWasDown {
             modifierWasDown = false
         }
-
-        return Unmanaged.passRetained(event)
     }
-
-    // Fn key fires keyDown events
 }
 
 // MARK: - HotkeyOption helpers
 
 private extension HotkeyOption {
-    var cgFlag: CGEventFlags {
+    var nsFlag: NSEvent.ModifierFlags {
         switch self {
-        case .control: return .maskControl
-        case .option:  return .maskAlternate
-        case .shift:   return .maskShift
+        case .control: return .control
+        case .option:  return .option
+        case .shift:   return .shift
         }
     }
 }

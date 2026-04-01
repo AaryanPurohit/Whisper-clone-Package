@@ -19,7 +19,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         hotkey.onToggle = { [weak self] in self?.toggleRecording() }
         hotkey.onTapFailed = { [weak self] in self?.showAccessibilityAlert() }
-        hotkey.onRestartRequired = { [weak self] in self?.relaunchApp() }
         hotkey.start()
 
         // Auto-open Settings if no API key is configured yet
