@@ -7,26 +7,21 @@ struct SettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
 
-            // MARK: Shortcut
+            // MARK: Shortcut info
             VStack(alignment: .leading, spacing: 8) {
                 Label("Recording Shortcut", systemImage: "keyboard")
                     .font(.headline)
 
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(HotkeyOption.allCases, id: \.self) { opt in
-                        HStack(spacing: 8) {
-                            Image(systemName: prefs.hotkey == opt ? "largecircle.fill.circle" : "circle")
-                                .foregroundStyle(prefs.hotkey == opt ? Color.accentColor : .secondary)
-                            Text(opt.displayName)
-                                .foregroundStyle(.primary)
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture { prefs.hotkey = opt }
-                    }
+                HStack(spacing: 6) {
+                    Text("Control + Space")
+                        .font(.system(.body, design: .monospaced))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.secondary.opacity(0.15))
+                        .cornerRadius(6)
                 }
-                .padding(.leading, 4)
 
-                Text("Press the shortcut once to start recording, again to stop and transcribe.")
+                Text("Press once to start recording, press again to stop and transcribe.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -60,6 +55,6 @@ struct SettingsView: View {
             Spacer()
         }
         .padding(24)
-        .frame(width: 400, height: 300)
+        .frame(width: 380, height: 240)
     }
 }

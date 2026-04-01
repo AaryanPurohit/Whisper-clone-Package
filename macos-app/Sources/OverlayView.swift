@@ -31,7 +31,7 @@ private struct WaveformBars: View {
 
 struct OverlayView: View {
     @ObservedObject private var controller = OverlayController.shared
-    @ObservedObject private var prefs      = PreferencesManager.shared
+
     @State private var isHovered = false
 
     private var isActive: Bool { isHovered || controller.state != .idle }
@@ -42,7 +42,7 @@ struct OverlayView: View {
 
             VStack(spacing: 8) {
                 // Hint pill — fades in on hover while idle
-                Text("Double-press \(prefs.hotkey.displayName) to dictate")
+                Text("Press Control+Space to dictate")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)
