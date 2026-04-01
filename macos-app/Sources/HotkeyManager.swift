@@ -6,70 +6,55 @@ class HotkeyManager {
 
     var onToggle: (() -> Void)?
 
-    var isInstalled: Bool { hotKeyRef != nil }
+    var isInstalled: Bool { globalMonitor != nil }
 
-    private var hotKeyRef: EventHotKeyRef?
-    private var localMonitor: Any?
     private var globalMonitor: Any?
-
-    private static let hotkeyID: UInt32 = 1
-    private static let hotkeySignature: OSType = 0x57484B31 // "WHK1"
+    private var accessibilityPoller: Timer?
 
     private init() {}
 
     // MARK: - Public
 
     func start() {
-        installEventMonitors()
+        requestAccessibilityIfNeeded()
         install()
     }
 
     func stop() {
-        unregisterHotKey()
-        [localMonitor, globalMonitor].compactMap { $0 }.forEach { NSEvent.removeMonitor($0) }
-        localMonitor = nil
-        globalMonitor = nil
+        if let m = globalMonitor { NSEvent.removeMonitor(m); globalMonitor = nil }
+        accessibilityPoller?.invalidate()
+        accessibilityPoller = nil
     }
 
     // MARK: - Private
 
-    /// Intercept Carbon hotkey events delivered as NSEvent(.systemDefined, subtype 6).
-    /// RegisterEventHotKey requires no Accessibility or Input Monitoring permission.
-    private func installEventMonitors() {
-        guard localMonitor == nil else { return }
-
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .systemDefined) { [weak self] event in
-            self?.handleSystemEvent(event)
-            return event
-        }
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .systemDefined) { [weak self] event in
-            self?.handleSystemEvent(event)
-        }
-    }
-
-    private func handleSystemEvent(_ event: NSEvent) {
-        guard event.subtype.rawValue == 6 else { return } // NSHotKeyDownEvent
-        let keyID = UInt32(event.data1 & 0x0000_ffff)
-        guard keyID == HotkeyManager.hotkeyID else { return }
-        DispatchQueue.main.async { self.onToggle?() }
-    }
-
     private func install() {
-        var id = EventHotKeyID(signature: HotkeyManager.hotkeySignature, id: HotkeyManager.hotkeyID)
-        var ref: EventHotKeyRef?
-        // Control + Space
-        let status = RegisterEventHotKey(
-            UInt32(kVK_Space),
-            UInt32(controlKey),
-            id,
-            GetApplicationEventTarget(),
-            0,
-            &ref
-        )
-        if status == noErr { hotKeyRef = ref }
+        guard AXIsProcessTrusted() else {
+            startPolling()
+            return
+        }
+        // Monitor Control+Space as a keyDown event (requires Accessibility, which is granted).
+        // keyDown is more reliably delivered on macOS 26 than flagsChanged or systemDefined.
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == UInt16(kVK_Space),
+                  event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .control
+            else { return }
+            DispatchQueue.main.async { self?.onToggle?() }
+        }
     }
 
-    private func unregisterHotKey() {
-        if let ref = hotKeyRef { UnregisterEventHotKey(ref); hotKeyRef = nil }
+    private func requestAccessibilityIfNeeded() {
+        let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        AXIsProcessTrustedWithOptions(opts)
+    }
+
+    private func startPolling() {
+        accessibilityPoller?.invalidate()
+        accessibilityPoller = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            guard let self, AXIsProcessTrusted() else { return }
+            timer.invalidate()
+            self.accessibilityPoller = nil
+            self.install()
+        }
     }
 }

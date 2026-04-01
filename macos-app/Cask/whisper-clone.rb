@@ -1,7 +1,7 @@
 cask "whisper-clone" do
-  version "1.0.7"
+  version "1.0.8"
 
-  sha256 "f47171a82340d8e618c2c07e5a33c683a157be30f22437bba87fa1f3b59ee169"
+  sha256 "3b3de356a4230143b56b40a7fd2bf2a3d8a952e79767bcdb5df32a3f8c6e56e1"
 
   url "https://github.com/AaryanPurohit/Whisper-clone-Package/releases/download/v#{version}/WhisperClone.zip"
   name "Whisper Clone"
